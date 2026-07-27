@@ -1,0 +1,109 @@
+version: "3.8"
+
+services:
+    # === ХРАНИЛИЩЕ DWH ===
+    postgres:
+        image: postgres:15-alpine
+        container_name: dwh_postgres
+        restart: always
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB}
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        ports:
+            # Защищено: доступ только локально на VPS или через SSH-туннель
+            - "${POSTGRES_IP}:${POSTGRES_PORT}:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}",
+                ]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+    # === БРОКЕР СООБЩЕНИЙ ===
+    kafka:
+        image: apache/kafka:latest
+        container_name: demo_kafka
+        restart: always
+        ports:
+            - "9092:9092"
+        environment:
+            KAFKA_NODE_ID: 1
+            KAFKA_PROCESS_ROLES: "broker,controller"
+            KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:29093"
+
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+            KAFKA_LISTENERS: "PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092"
+
+            # ВАЖНО: Внутри сети Docker консьюмеры/продюсеры должны подключаться к kafka:29092!
+            KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092"
+
+            KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+            KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+            KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+            KAFKA_LOG_DIRS: "/var/lib/kafka/data"
+            KAFKA_CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "opt/kafka/bin/kafka-broker-api-versions.sh",
+                    "--bootstrap-server",
+                    "localhost:9092",
+                ]
+            interval: 10s
+            timeout: 10s
+            retries: 5
+
+    # === PRODUCER (Сборщик тиков Binance) ===
+    producer:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: binance_producer
+        restart: always
+        command: python -m src.main
+        env_file:
+            - .env
+        environment:
+            # Явно переопределяем хост Kafka для подключения внутри Docker-сети
+            - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+        depends_on:
+            kafka:
+                condition: service_healthy
+
+    # === CONSUMER (Запись в PostgreSQL DWH) ===
+    consumer:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: binance_consumer
+        restart: always
+        command: python -m src.consumer_main
+        env_file:
+            - .env
+        environment:
+            # Хосты переопределены на имена сервисов в compose!
+            - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+            - POSTGRES_HOST=postgres
+            - POSTGRES_PORT=5432
+        depends_on:
+            kafka:
+                condition: service_healthy
+            postgres:
+                condition: service_healthy
+
+volumes:
+    postgres_data:
+        driver: local

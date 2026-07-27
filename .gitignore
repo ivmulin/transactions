@@ -1,0 +1,57 @@
+# ==========================================
+# Core & System
+# ==========================================
+**/__pycache__/
+*.py[cod]
+*$py.class
+.DS_Store
+.history/
+
+# ==========================================
+# Python & Environments
+# ==========================================
+.venv/
+venv/
+ENV/
+env/
+.python-version
+.micromamba/
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ==========================================
+# Secrets, Credentials & Configs
+# ==========================================
+.env
+.env.*
+!.env.example
+*.core
+*.auth
+certs/
+*.pem
+*.key
+
+# ==========================================
+# Docker & Infrastructure
+# ==========================================
+.docker/
+# Если Airflow монтирует локальные папки под логи и плагины:
+logs/
+airflow_logs/
+db_data/
+postgres_data/
+
+# ==========================================
+# Data Science & Storage (Большие файлы и дампы)
+# ==========================================
+*.csv
+*.parquet
+*.jsonl
+*.db
+*.sqlite3
+data/
+raw_data/
+project_dump.txt
+dump_project.py
