@@ -27,7 +27,7 @@ services:
     # === БРОКЕР СООБЩЕНИЙ ===
     kafka:
         image: apache/kafka:latest
-        container_name: demo_kafka
+        container_name: kafka_broker
         restart: always
         ports:
             - "9092:9092"
