@@ -1,3 +1,4 @@
+-- OHLCV свеча
 WITH windowed_values AS (
     SELECT
         ticker,
@@ -7,6 +8,8 @@ WITH windowed_values AS (
         LAST_VALUE(price) OVER window_1m AS close_price
     FROM
         binance_raw_prices AS brp 
+    WHERE 
+        created_at >= NOW() - INTERVAL '10 minutes'
     WINDOW window_1m AS (
         PARTITION BY ticker,
             date_trunc('minute', created_at)
@@ -57,18 +60,3 @@ ON CONFLICT (ticker, bucket) DO UPDATE SET
 
 
 SELECT * FROM binance_candles_1m AS bcm LIMIT 100;
-
--- OHLCV
---
--- open
--- high
--- low
--- close
--- volume
---
-
-SELECT
-    *
-FROM
-    binance_raw_prices AS brp
-LIMIT 10;
