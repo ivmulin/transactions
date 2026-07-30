@@ -57,6 +57,3 @@ ON CONFLICT (ticker, bucket) DO UPDATE SET
     close_price = EXCLUDED.close_price,
     ticks_count = EXCLUDED.ticks_count,
     created_at = CURRENT_TIMESTAMP;
-
-
-SELECT * FROM binance_candles_1m AS bcm LIMIT 100;
