@@ -3,6 +3,7 @@ import logging
 import os
 from pathlib import Path
 
+from src.config.code import SQL_AGGREGATOR_1M_FILE, SQL_AGGREGATOR_1M_FOLDER, SQL_FOLDER
 from src.connectors.postgres import create_postgres_pool
 
 logging.basicConfig(
@@ -22,9 +23,9 @@ DSN = f"postgres://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{PG_DB}"
 # Путь к SQL-файлу относительного текущего скрипта
 SQL_FILE_PATH = (
     Path(__file__).resolve().parent.parent
-    / "sql"
-    / "transformations"
-    / "aggregate_1m_candles.sql"
+    / SQL_FOLDER
+    / SQL_AGGREGATOR_1M_FOLDER
+    / SQL_AGGREGATOR_1M_FILE
 )
 
 

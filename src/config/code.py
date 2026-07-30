@@ -13,9 +13,12 @@ MIN_POOL_SIZE = 1
 MAX_POOL_SIZE = 10
 MAX_BATCH_SIZE = 500
 FLUSH_INTERVAL = 1.0
-
-# === DWH ===
-
 DWH_NAME = "binance_raw_prices"
+
+# === SQL ===
+
+SQL_FOLDER = "sql"
+SQL_AGGREGATOR_1M_FOLDER = "transform"
+SQL_AGGREGATOR_1M_FILE = "aggregate_1m_candles.sql"
 
 # === === ===
