@@ -21,4 +21,13 @@ SQL_FOLDER = "sql"
 SQL_AGGREGATOR_1M_FOLDER = "transform"
 SQL_AGGREGATOR_1M_FILE = "aggregate_1m_candles.sql"
 
+# === ENV ===
+
+# Names of .env variables
+PSQL_DB_NAME = "POSTGRES_DB"
+PSQL_USER_NAME = "POSTGRES_USER"
+PSQL_PWD_NAME = "POSTGRES_PASSWORD"
+PSQL_PORT_NAME = "POSTGRES_PORT"
+PSQL_HOST_NAME = "POSTGRES_HOST"
+
 # === === ===

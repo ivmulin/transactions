@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 from src.config.code import SQL_AGGREGATOR_1M_FILE, SQL_AGGREGATOR_1M_FOLDER, SQL_FOLDER
+from src.config.service import SQL_UPDATE_SLEEP
 from src.connectors.postgres import create_postgres_pool
 
 logging.basicConfig(
@@ -36,7 +37,7 @@ async def run_transformation_loop():
         logger.error(f"SQL file not found at {SQL_FILE_PATH}")
         return
 
-    logger.info("Starting transformation loop (interval: 60s)...")
+    logger.info(f"Starting transformation loop (interval: {SQL_UPDATE_SLEEP}s)...")
 
     try:
         while True:
@@ -55,7 +56,7 @@ async def run_transformation_loop():
                 )
 
             # Ждем 60 секунд до следующего запуска
-            await asyncio.sleep(60)
+            await asyncio.sleep(SQL_UPDATE_SLEEP)
 
     finally:
         await pool.close()

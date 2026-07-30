@@ -43,13 +43,8 @@ BINANCE_URL = "https://api.binance.com/api/v3/ticker/price"
 CONSUMER_MAX_RECORDS = 100
 CONSUMER_TIMEOUT_MS = 1000
 
-# === ENV ===
+# == SQL ===
 
-# Names of .env variables
-PSQL_DB_NAME = "POSTGRES_DB"
-PSQL_USER_NAME = "POSTGRES_USER"
-PSQL_PWD_NAME = "POSTGRES_PASSWORD"
-PSQL_PORT_NAME = "POSTGRES_PORT"
-PSQL_HOST_NAME = "POSTGRES_HOST"
+SQL_UPDATE_SLEEP = 60
 
 # === === ===
