@@ -5,8 +5,10 @@ import os
 import asyncpg
 from dotenv import load_dotenv
 
-from src.config.code import DWH_NAME, MAX_POOL_SIZE, MIN_POOL_SIZE
-from src.config.service import (
+from src.config.code import (
+    DWH_NAME,
+    MAX_POOL_SIZE,
+    MIN_POOL_SIZE,
     PSQL_DB_NAME,
     PSQL_HOST_NAME,
     PSQL_PORT_NAME,
