@@ -149,7 +149,9 @@ services:
 
     # === AIRFLOW: WEBSERVER (UI) ===
     airflow-webserver:
-        image: apache/airflow:2.10.4
+        build:
+            context: .
+            dockerfile: Dockerfile.airflow
         container_name: airflow_webserver
         restart: always
         depends_on:
@@ -168,6 +170,8 @@ services:
         volumes:
             - ./airflow/dags:/opt/airflow/dags
             - ./airflow/logs:/opt/airflow/logs
+            - ./dbt_crypto:/opt/airflow/dbt_crypto
+            - ./profiles.airflow.yml:/opt/airflow/dbt_profiles/profiles.yml
         command: webserver
         healthcheck:
             test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
@@ -177,7 +181,9 @@ services:
 
     # === AIRFLOW: SCHEDULER (планирует и исполняет таски — LocalExecutor, без отдельного worker) ===
     airflow-scheduler:
-        image: apache/airflow:2.10.4
+        build:
+            context: .
+            dockerfile: Dockerfile.airflow
         container_name: airflow_scheduler
         restart: always
         depends_on:
@@ -192,6 +198,8 @@ services:
         volumes:
             - ./airflow/dags:/opt/airflow/dags
             - ./airflow/logs:/opt/airflow/logs
+            - ./dbt_crypto:/opt/airflow/dbt_crypto
+            - ./profiles.airflow.yml:/opt/airflow/dbt_profiles/profiles.yml
         command: scheduler
 
 volumes:
