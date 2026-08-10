@@ -101,25 +101,6 @@ services:
                 condition: service_healthy
             postgres:
                 condition: service_healthy
-    # === TRANSFORMER (Обновление свечи) ===
-    transformer:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        container_name: binance_transformer
-        command: python -m src.transformer_main
-        environment:
-            - POSTGRES_HOST=dwh_postgres
-            - POSTGRES_PORT=5432
-            - POSTGRES_DB=${POSTGRES_DB}
-            - POSTGRES_USER=${POSTGRES_USER}
-            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-        volumes:
-            - ./sql:/app/sql # Монтируем папку с SQL для горячего обновления без пересборки образа
-        depends_on:
-            postgres:
-                condition: service_healthy
-        restart: always
 
 volumes:
     postgres_data:
