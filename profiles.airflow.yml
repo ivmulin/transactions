@@ -1,0 +1,29 @@
+dbt_crypto:
+  target: airflow_container
+  outputs:
+    # Существующий target для запуска dbt с локальной машины —
+    # через SSH-туннель на 127.0.0.1. Если он называется -
+    # переименовать здесь под свой, добавить только блок ниже.
+    dev:
+      type: postgres
+      host: 127.0.0.1
+      port: "{{ env_var('DBT_LOCAL_PG_PORT', '5432') }}"
+      user: "{{ env_var('POSTGRES_USER') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD') }}"
+      dbname: "{{ env_var('POSTGRES_DB') }}"
+      schema: public
+      threads: 4
+
+    # Новый target — используется ТОЛЬКО когда dbt запускается изнутри
+    # контейнера airflow-scheduler. host = имя сервиса в Docker-сети
+    # (dwh_postgres), а не 127.0.0.1 — SSH-туннель тут не нужен и не
+    # существует, контейнеры видят друг друга напрямую по имени сервиса.
+    airflow_container:
+      type: postgres
+      host: dwh_postgres
+      port: 5432
+      user: "{{ env_var('POSTGRES_USER') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD') }}"
+      dbname: "{{ env_var('POSTGRES_DB') }}"
+      schema: public
+      threads: 4

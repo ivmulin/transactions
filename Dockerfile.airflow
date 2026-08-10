@@ -1,0 +1,15 @@
+# Базовый официальный образ Airflow — та же версия, что уже используется
+# в docker-compose.yml (2.10.4), чтобы не расходиться с уже поднятой metadata-БД.
+FROM apache/airflow:2.10.4
+
+# Устанавливаем от пользователя airflow (UID 50000), НЕ root — так же,
+# как и в базовом образе. Ставить Python-пакеты через pip от root в этом
+# образе запрещено намеренно (constraint самого Airflow), поэтому USER
+# не трогаем.
+
+# astronomer-cosmos — транслирует dbt-проект (через manifest.json) в
+# отдельные Airflow-таски, по одной на каждую dbt-модель.
+# dbt-postgres — конкретный адаптер dbt под наш Postgres DWH.
+RUN pip install --no-cache-dir \
+    astronomer-cosmos==1.9.1 \
+    dbt-postgres==1.8.7
