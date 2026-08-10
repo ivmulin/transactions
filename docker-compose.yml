@@ -101,7 +101,97 @@ services:
                 condition: service_healthy
             postgres:
                 condition: service_healthy
+# === AIRFLOW: METADATA DB (отдельный инстанс, изолирован от DWH) ===
+    airflow-postgres:
+        image: postgres:15-alpine
+        container_name: airflow_postgres
+        restart: always
+        environment:
+            POSTGRES_DB: airflow
+            POSTGRES_USER: ${AIRFLOW_DB_USER}
+            POSTGRES_PASSWORD: ${AIRFLOW_DB_PASSWORD}
+        volumes:
+            - airflow_postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d airflow"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+    # === AIRFLOW: ОДНОРАЗОВАЯ ИНИЦИАЛИЗАЦИЯ (миграции схемы + admin-юзер) ===
+    airflow-init:
+        image: apache/airflow:2.10.4
+        container_name: airflow_init
+        depends_on:
+            airflow-postgres:
+                condition: service_healthy
+        environment:
+            AIRFLOW__CORE__EXECUTOR: LocalExecutor
+            AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@airflow-postgres:5432/airflow
+        entrypoint: /bin/bash
+        # airflow db migrate — накатывает схему metadata-БД (таблицы под DAG runs, task instances и т.д.)
+        # users create — создаёт admin-пользователя для входа в UI
+        command:
+            - -c
+            - >
+                airflow db migrate &&
+                airflow users create
+                --username ${AIRFLOW_ADMIN_USER}
+                --password ${AIRFLOW_ADMIN_PASSWORD}
+                --firstname admin
+                --lastname admin
+                --role Admin
+                --email admin@example.com
+
+    # === AIRFLOW: WEBSERVER (UI) ===
+    airflow-webserver:
+        image: apache/airflow:2.10.4
+        container_name: airflow_webserver
+        restart: always
+        depends_on:
+            airflow-postgres:
+                condition: service_healthy
+            airflow-init:
+                condition: service_completed_successfully
+        environment:
+            AIRFLOW__CORE__EXECUTOR: LocalExecutor
+            AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@airflow-postgres:5432/airflow
+            # Отключаем DAG из примеров — иначе UI засоряется десятками demo-DAG'ов
+            AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+        ports:
+            # Как и Postgres — доступ только локально/через SSH-туннель, не в открытый интернет
+            - "${AIRFLOW_IP}:${AIRFLOW_PORT}:8080"
+        volumes:
+            - ./airflow/dags:/opt/airflow/dags
+            - ./airflow/logs:/opt/airflow/logs
+        command: webserver
+        healthcheck:
+            test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+            interval: 10s
+            timeout: 10s
+            retries: 5
+
+    # === AIRFLOW: SCHEDULER (планирует и исполняет таски — LocalExecutor, без отдельного worker) ===
+    airflow-scheduler:
+        image: apache/airflow:2.10.4
+        container_name: airflow_scheduler
+        restart: always
+        depends_on:
+            airflow-postgres:
+                condition: service_healthy
+            airflow-init:
+                condition: service_completed_successfully
+        environment:
+            AIRFLOW__CORE__EXECUTOR: LocalExecutor
+            AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@airflow-postgres:5432/airflow
+            AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+        volumes:
+            - ./airflow/dags:/opt/airflow/dags
+            - ./airflow/logs:/opt/airflow/logs
+        command: scheduler
 
 volumes:
     postgres_data:
+        driver: local
+    airflow_postgres_data:
         driver: local
