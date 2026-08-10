@@ -10,6 +10,10 @@ FROM apache/airflow:2.10.4
 # astronomer-cosmos — транслирует dbt-проект (через manifest.json) в
 # отдельные Airflow-таски, по одной на каждую dbt-модель.
 # dbt-postgres — конкретный адаптер dbt под наш Postgres DWH.
-RUN pip install --no-cache-dir \
-    astronomer-cosmos==1.9.1 \
-    dbt-postgres==1.11.0
+#
+# Официальный способ установки cosmos + dbt-адаптер вместе — через extras
+# ([dbt.postgres]), а не как два независимых pinned-пакета. Так pip решает
+# зависимости (включая dbt-common) одним проходом, вместо долгого перебора
+# версий в поисках пересечения диапазонов между отдельно закреплёнными
+# astronomer-cosmos и dbt-postgres.
+RUN pip install --no-cache-dir 'astronomer-cosmos[dbt.postgres]==1.9.1'
