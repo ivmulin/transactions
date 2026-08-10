@@ -1,0 +1,31 @@
+version: 2
+
+sources:
+  - name: binance_raw
+    description: "Сырые данные, собираемые Kafka consumer'ом с Binance REST API"
+    schema: public
+    tables:
+      - name: binance_raw_prices
+        description: "Тики цен по тикерам, батчево записываемые consumer'ом"
+        loaded_at_field: created_at
+        freshness:
+          warn_after: {count: 5, period: minute}
+          error_after: {count: 15, period: minute}
+        columns:
+          - name: id
+            description: "Surrogate PK, BIGSERIAL"
+            tests:
+              - unique
+              - not_null
+          - name: ticker
+            description: "Символ пары, напр. BTCUSDT"
+            tests:
+              - not_null
+          - name: price
+            description: "Цена тика, NUMERIC(18,8)"
+            tests:
+              - not_null
+          - name: created_at
+            description: "Момент записи тика consumer'ом"
+            tests:
+              - not_null

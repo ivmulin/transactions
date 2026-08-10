@@ -1,0 +1,33 @@
+version: 2
+
+models:
+  - name: fct_candles_1m
+    columns:
+      - name: symbol
+        tests:
+          - not_null
+      - name: bucket
+        tests:
+          - not_null
+          - freshness:
+              warn_after_seconds: 120
+              error_after_seconds: 180
+      - name: open_price
+        tests:
+          - not_null
+      - name: high_price
+        tests:
+          - not_null
+      - name: low_price
+        tests:
+          - not_null
+      - name: close_price
+        tests:
+          - not_null
+      - name: ticks_count
+        tests:
+          - not_null
+    tests:
+      - ohlc_candle
+      - missing_candles:
+          symbol_column: symbol
