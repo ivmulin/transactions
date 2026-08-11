@@ -19,7 +19,7 @@ basic_cosmos_dag = DbtDag(
         "full_refresh": True,  # used only in dbt commands that support this flag
     },
     # normal dag parameters
-    schedule="@daily",
+    schedule="*/5 * * * *",
     start_date=datetime(2026, 8, 11),
     catchup=False,
     dag_id="dbt_updater_dag",
