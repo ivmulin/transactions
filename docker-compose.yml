@@ -164,6 +164,11 @@ services:
             AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@airflow-postgres:5432/airflow
             # Отключаем DAG из примеров — иначе UI засоряется десятками demo-DAG'ов
             AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+
+            # Пробрасываем Postgres-креды внутрь контейнера
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_DB}
         ports:
             # Как и Postgres — доступ только локально/через SSH-туннель, не в открытый интернет
             - "${AIRFLOW_IP}:${AIRFLOW_PORT}:8080"
@@ -195,6 +200,11 @@ services:
             AIRFLOW__CORE__EXECUTOR: LocalExecutor
             AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@airflow-postgres:5432/airflow
             AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+
+            # Пробрасываем Postgres-креды внутрь контейнера
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_DB}
         volumes:
             - ./airflow/dags:/opt/airflow/dags
             - ./airflow/logs:/opt/airflow/logs
