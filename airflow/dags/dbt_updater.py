@@ -21,7 +21,7 @@ basic_cosmos_dag = DbtDag(
     # normal dag parameters
     schedule="@daily",
     start_date=datetime(2026, 8, 11),
-    catchup=True,
+    catchup=False,
     dag_id="dbt_updater_dag",
     default_args={"retries": 2},
 )
