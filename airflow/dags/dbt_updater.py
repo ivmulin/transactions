@@ -3,6 +3,7 @@ from datetime import datetime
 
 project_config = ProjectConfig(dbt_project_path='/opt/airflow/dbt_crypto')
 profile_config = ProfileConfig(
+    profile_name='dbt_crypto',
     profiles_yml_filepath='/opt/airflow/dbt_profiles/profiles.yml',
     target_name='airflow_container'
 )
