@@ -11,9 +11,19 @@ FROM apache/airflow:2.10.4
 # отдельные Airflow-таски, по одной на каждую dbt-модель.
 # dbt-postgres — конкретный адаптер dbt под наш Postgres DWH.
 #
-# Официальный способ установки cosmos + dbt-адаптер вместе — через extras
-# ([dbt.postgres]), а не как два независимых pinned-пакета. Так pip решает
-# зависимости (включая dbt-common) одним проходом, вместо долгого перебора
-# версий в поисках пересечения диапазонов между отдельно закреплёнными
-# astronomer-cosmos и dbt-postgres.
-RUN pip install --no-cache-dir 'astronomer-cosmos[dbt.postgres]==1.9.1'
+# astronomer-cosmos ставим в основное окружение Airflow — он сам по себе
+# лёгкий и совместим с constraints самого Airflow.
+RUN pip install --no-cache-dir astronomer-cosmos==1.9.1
+
+# dbt-core/dbt-postgres НЕ ставим в основное окружение: у dbt большой
+# собственный стек зависимостей, который может конфликтовать по версиям
+# с тем, что уже жёстко закреплено в базовом образе Airflow (constraints
+# apache/airflow). Из-за этого pip мог уходить в долгий backtracking,
+# пытаясь согласовать ОБА набора зависимостей разом.
+# Решение — изолированный venv только для dbt, cosmos обращается к нему
+# как к внешнему исполняемому файлу (dbt_executable_path), а не как
+# к Python-библиотеке в том же окружении.
+RUN python -m venv /opt/airflow/dbt_venv && \
+    /opt/airflow/dbt_venv/bin/pip install --no-cache-dir \
+    dbt-core==1.12.0 \
+    dbt-postgres==1.11.0
