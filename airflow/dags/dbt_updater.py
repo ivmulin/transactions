@@ -7,13 +7,14 @@ profile_config = ProfileConfig(
     profiles_yml_filepath='/opt/airflow/dbt_profiles/profiles.yml',
     target_name='airflow_container'
 )
-ExecutionConfig(dbt_executable_path='/opt/airflow/dbt_venv/bin/dbt')
+exectution_config = ExecutionConfig(dbt_executable_path='/opt/airflow/dbt_venv/bin/dbt')
 
 
 basic_cosmos_dag = DbtDag(
     # dbt/cosmos-specific parameters
     project_config=project_config,
     profile_config=profile_config,
+    execution_config=exectution_config,
     operator_args={
         "full_refresh": True,  # used only in dbt commands that support this flag
     },
